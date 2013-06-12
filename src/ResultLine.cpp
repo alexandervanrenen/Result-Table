@@ -21,6 +21,12 @@ void ResultLine::addField(const ResultField& resultField)
    resultFields.push_back(resultField.toUnique());
 }
 
+ResultLine& operator << (ResultLine& resultLine, const ResultField& resultField)
+{
+   resultLine.addField(resultField);
+   return resultLine;
+}
+
 const string ResultLine::getTag() const
 {
    return lineLable;

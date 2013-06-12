@@ -56,6 +56,12 @@ void ResultSet::addResultLine(const ResultLine& resultLine)
     resultLines.push_back(unique_ptr<ResultLine>(new ResultLine(resultLine)));
 }
 
+ResultSet& operator << (ResultSet& resultSet, const ResultLine& resultLine)
+{
+    resultSet.addResultLine(resultLine);
+    return resultSet;
+}
+
 string ResultSet::str() const
 {
     ostringstream os;

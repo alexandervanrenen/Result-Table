@@ -14,6 +14,7 @@ public:
    ResultLine(const ResultLine& other);
 
    void addField(const ResultField& resultField);
+   friend ResultLine& operator << (ResultLine& resultLine, const ResultField& resultField);
 
    const std::string getTag() const;
    const std::vector<std::unique_ptr<ResultField>>& getFields() const;

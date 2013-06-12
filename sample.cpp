@@ -9,18 +9,17 @@ using namespace std;
 int main()
 {
     ResultLine first("first");
-    first.addField(TimeField("setup", chrono::nanoseconds(212322)));
-    first.addField(ByteField("memory", 54648));
-    first.addField(RatioField("%", 0.23123));
+    first << TimeField("setup", chrono::nanoseconds(212322))
+          << ByteField("memory", 54648)
+          << RatioField("%", 0.23123);
 
     ResultLine second("second");
-    second.addField(TimeField("setup", chrono::nanoseconds(21232)));
-    second.addField(ValueField("counter", 1000000));
+    second << TimeField("setup", chrono::nanoseconds(21232))
+           << ValueField("counter", 1000000);
 
     ResultSet set;
     set.padding(2).border(true).orientation(ResultSet::Orientation::kRight);
-    set.addResultLine(first);
-    set.addResultLine(second);
+    set << first << second;
     cout << set << endl;
 
     return 0;

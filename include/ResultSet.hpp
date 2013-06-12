@@ -24,6 +24,7 @@ public:
 
     /// Add a new line
     void addResultLine(const ResultLine& resultLine);
+    friend ResultSet& operator << (ResultSet& resultSet, const ResultLine& resultLine);
 
     /// Output the result set
     std::string str() const;
