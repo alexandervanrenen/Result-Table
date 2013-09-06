@@ -12,8 +12,8 @@ ResultLine::ResultLine(const ResultLine& other)
 {
    lineLable = other.lineLable;
    resultFields.reserve(other.resultFields.size());
-   for(auto& iter : other.resultFields)
-      resultFields.push_back(iter->toUnique());
+   for(uint i=0; i<other.resultFields.size(); i++)
+      resultFields.push_back(other.resultFields[i]->toUnique());
 }
 
 void ResultLine::addField(const ResultField& resultField)

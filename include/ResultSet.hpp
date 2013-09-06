@@ -34,11 +34,11 @@ private:
     std::vector<std::unique_ptr<ResultLine>> resultLines;
 
     /// Configuration values (not really constants anymore .. )
-    uint32_t kPadding = 3;
-    uint32_t kPrecision = 3; // The first x = 3 digits of the results matter. 4444 -> 4440
-    bool kUseUnits = true;
-    bool kPrintBorder = false;
-    Orientation kOrientation = Orientation::kLeft;
+    uint32_t kPadding;
+    uint32_t kPrecision; // The first x = 3 digits of the results matter. 4444 -> 4440
+    bool kUseUnits;
+    bool kPrintBorder;
+    Orientation kOrientation;
 
     void serialize(std::ostream& os) const;
 };

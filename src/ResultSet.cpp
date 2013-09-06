@@ -75,51 +75,55 @@ ostream& operator << (ostream& os, const ResultSet& resultSet)
     return os;
 }
 
+struct Column {
+     string tag;
+     uint64_t width;
+};
+
 void ResultSet::serialize(ostream& os) const
 {
-    struct Column {
-        string tag;
-        uint64_t width;
-    };
     Column lableColumn{"", 0};
     vector<Column> tableLayout;
 
     // Find all columns and calculate their minimum length
-    for(auto& line : resultLines) {
-        lableColumn.width = max(lableColumn.width, line->getTag().size());
-        for(auto& field : line->getFields()) {
-            auto column = find_if(tableLayout.begin(), tableLayout.end(),[&field](const Column& column){return field->getTag()==column.tag;});
+    for(uint i=0; i<resultLines.size(); i++) {
+        lableColumn.width = max(lableColumn.width, resultLines[i]->getTag().size());
+        for(auto field=resultLines[i]->getFields().begin(); field!=resultLines[i]->getFields().end(); field++) {
+            // Find colum with same tag
+            auto column = tableLayout.begin();
+            while(column!=tableLayout.end() && column->tag!=(*field)->getTag()) column++;
             if(column == tableLayout.end())
-                tableLayout.push_back(Column{field->getTag(), max(field->getTag().size(), field->getValue(kPrecision).size())}); else
-                column->width = max(column->width , field->getValue(kPrecision).size());
+                tableLayout.push_back(Column{(*field)->getTag(), max((*field)->getTag().size(), (*field)->getValue(kPrecision).size())}); else
+                column->width = max(column->width , (*field)->getValue(kPrecision).size());
         }
     }
 
     // Get total width
     uint32_t totalWidth = 0 + (kPrintBorder?4:0) + kPadding;
     totalWidth += lableColumn.width;
-    for(auto& column : tableLayout)
-        totalWidth += column.width + kPadding + (kPrintBorder?3:0);
+    for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++)
+        totalWidth += column->width + kPadding + (kPrintBorder?3:0);
 
     // Print the header
     if(kPrintBorder) os << string(totalWidth, '-') << endl;
     os << (kPrintBorder?"| ":"") << left << setw(lableColumn.width+kPadding) << "label" << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
-    for(auto& column : tableLayout)
-        os << setw(column.width+kPadding) << column.tag << (kPrintBorder?" | ":"");
+    for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++)
+        os << setw(column->width+kPadding) << column->tag << (kPrintBorder?" | ":"");
     os << endl;
 
     // Print each line of the content
-    for(auto& line : resultLines) {
+    for(auto line=resultLines.begin(); line!=resultLines.end(); line++) {
         // Print label of this line
         if(kPrintBorder) os << string(totalWidth, '-') << endl;
-        os << left << (kPrintBorder?"| ":"") << setw(lableColumn.width+kPadding) << line->getTag() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
+        os << left << (kPrintBorder?"| ":"") << setw(lableColumn.width+kPadding) << (*line)->getTag() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
 
         // Print results of this line
-        for(auto& column : tableLayout) {
-            auto result = find_if(line->getFields().begin(), line->getFields().end(),[&column](const unique_ptr<ResultField>& field){return field->getTag()==column.tag;});
-            if(result == line->getFields().end())
-                os << setw(column.width+kPadding) << " " << (kPrintBorder?" | ":""); else
-                os << setw(column.width+kPadding) << (*result)->getValue(kPrecision) << (kPrintBorder?" | ":"");
+        for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++) {
+            auto result = (*line)->getFields().begin();
+            while(result!=(*line)->getFields().end() && (*result)->getTag()!=column->tag) result++;
+            if(result == (*line)->getFields().end())
+                os << setw(column->width+kPadding) << " " << (kPrintBorder?" | ":""); else
+                os << setw(column->width+kPadding) << (*result)->getValue(kPrecision) << (kPrintBorder?" | ":"");
         }
         os << endl;
     }
