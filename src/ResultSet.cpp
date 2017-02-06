@@ -87,14 +87,14 @@ void ResultSet::serialize(ostream& os) const
 
     // Find all columns and calculate their minimum length
     for(uint i=0; i<resultLines.size(); i++) {
-        lableColumn.width = max(lableColumn.width, resultLines[i]->getTag().size());
+        lableColumn.width = max(lableColumn.width, static_cast<uint64_t>(resultLines[i]->getTag().size()));
         for(auto field=resultLines[i]->getFields().begin(); field!=resultLines[i]->getFields().end(); field++) {
             // Find colum with same tag
             auto column = tableLayout.begin();
             while(column!=tableLayout.end() && column->tag!=(*field)->getTag()) column++;
             if(column == tableLayout.end())
                 tableLayout.push_back(Column{(*field)->getTag(), max((*field)->getTag().size(), (*field)->getValue(kPrecision).size())}); else
-                column->width = max(column->width , (*field)->getValue(kPrecision).size());
+                column->width = max(column->width , static_cast<uint64_t>((*field)->getValue(kPrecision).size()));
         }
     }
 

@@ -12,7 +12,7 @@ ResultLine::ResultLine(const ResultLine& other)
 {
    lineLable = other.lineLable;
    resultFields.reserve(other.resultFields.size());
-   for(uint i=0; i<other.resultFields.size(); i++)
+   for(unsigned i=0; i<other.resultFields.size(); i++)
       resultFields.push_back(other.resultFields[i]->toUnique());
 }
 
