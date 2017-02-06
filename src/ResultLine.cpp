@@ -21,6 +21,13 @@ void ResultLine::addField(const ResultField& resultField)
    resultFields.push_back(resultField.toUnique());
 }
 
+void ResultLine::addFields(const ResultLine& other)
+{
+   for(auto& iter : other.resultFields) {
+      resultFields.push_back(iter->toUnique());
+   }
+}
+
 ResultLine& operator << (ResultLine& resultLine, const ResultField& resultField)
 {
    resultLine.addField(resultField);

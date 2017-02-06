@@ -27,6 +27,9 @@ public:
     void addResultLine(const ResultLine& resultLine);
     friend ResultSet& operator << (ResultSet& resultSet, const ResultLine& resultLine);
 
+    // Update existing lines
+    ResultLine& getResultLineByTag(const std::string& tag);
+
     /// Output the result set
     std::string str() const;
     friend std::ostream& operator << (std::ostream& os, const ResultSet& resultSet);

@@ -69,6 +69,18 @@ ResultSet& operator << (ResultSet& resultSet, const ResultLine& resultLine)
     return resultSet;
 }
 
+ResultLine& ResultSet::getResultLineByTag(const std::string& tag)
+{
+    // Reuse exiting line
+    for(auto& iter : resultLines)
+        if(iter->getTag() == tag)
+            return *iter;
+
+    // Create new line
+   resultLines.push_back(unique_ptr<ResultLine>(new ResultLine(tag)));
+   return *resultLines.back();
+}
+
 string ResultSet::str() const
 {
     ostringstream os;
