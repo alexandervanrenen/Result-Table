@@ -8,10 +8,11 @@
 
 using namespace std;
 
-ResultSet::ResultSet(uint32_t padding, uint32_t precision, bool useUnits, bool printBorder, Orientation orientation)
+ResultSet::ResultSet(uint32_t padding, uint32_t precision, bool printUnits, bool useMetricPrefix, bool printBorder, Orientation orientation)
 : kPadding(padding)
 , kPrecision(precision)
-, kUseUnits(useUnits)
+, kPrintUnits(printUnits)
+, kUseMetricPrefix(useMetricPrefix)
 , kPrintBorder(printBorder)
 , kOrientation(orientation)
 {
@@ -33,15 +34,21 @@ ResultSet& ResultSet::precision(uint32_t precision)
     return *this;
 }
 
-ResultSet& ResultSet::useUnits(bool useUnits)
+ResultSet& ResultSet::printUnits(bool printUnits)
 {
-    kUseUnits = useUnits;
+    kPrintUnits = printUnits;
     return *this;
 }
 
 ResultSet& ResultSet::border(bool printBorder)
 {
     kPrintBorder = printBorder;
+    return *this;
+}
+
+ResultSet& ResultSet::useMetricPrefix(bool useMetricPrefix)
+{
+    kUseMetricPrefix = useMetricPrefix;
     return *this;
 }
 
@@ -82,7 +89,13 @@ struct Column {
 
 void ResultSet::serialize(ostream& os) const
 {
-    Column lableColumn{"", 0};
+    // Sanity check
+    if(!kPrintUnits && kUseMetricPrefix) {
+        cout << "can not hide units and use metric prefixes." << endl;
+        throw;
+    }
+
+    Column lableColumn{"", string("lable").length()};
     vector<Column> tableLayout;
 
     // Find all columns and calculate their minimum length
@@ -93,8 +106,8 @@ void ResultSet::serialize(ostream& os) const
             auto column = tableLayout.begin();
             while(column!=tableLayout.end() && column->tag!=(*field)->getTag()) column++;
             if(column == tableLayout.end())
-                tableLayout.push_back(Column{(*field)->getTag(), max((*field)->getTag().size(), (*field)->getValue(kPrecision).size())}); else
-                column->width = max(column->width , static_cast<uint64_t>((*field)->getValue(kPrecision).size()));
+                tableLayout.push_back(Column{(*field)->getTag(), max((*field)->getTag().size(), (*field)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits).size())}); else
+                column->width = max(column->width , static_cast<uint64_t>((*field)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits).size()));
         }
     }
 
@@ -123,7 +136,7 @@ void ResultSet::serialize(ostream& os) const
             while(result!=(*line)->getFields().end() && (*result)->getTag()!=column->tag) result++;
             if(result == (*line)->getFields().end())
                 os << setw(column->width+kPadding) << " " << (kPrintBorder?" | ":""); else
-                os << setw(column->width+kPadding) << (*result)->getValue(kPrecision) << (kPrintBorder?" | ":"");
+                os << setw(column->width+kPadding) << (*result)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits) << (kPrintBorder?" | ":"");
         }
         os << endl;
     }

@@ -37,25 +37,25 @@ double applyPrecisionDouble(double input, uint32_t precision)
 
 }
 
-string TimeField::getValue(uint32_t precision) const
+string TimeField::getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const
 {
     ostringstream os;
 
-    uint64_t timeSpan = applyPrecision(nanoseconds.count(), precision);
+    uint64_t timeSpan = (useMetricPrefix ? applyPrecision(nanoseconds.count(), precision) : nanoseconds.count());
 
     // Convert to right unit
-    if(timeSpan < 1000ll)
-        os << timeSpan << "ns";
+    if(timeSpan < 1000ll || !useMetricPrefix)
+        os << timeSpan << (printUnits ? "ns" : "");
     else if(timeSpan < 1000ll * 1000ll)
-        os << timeSpan/1000.0f << "us";
+        os << timeSpan/1000.0f << (printUnits ? "us" : "");
     else if(timeSpan < 1000ll * 1000ll * 1000ll)
-        os << timeSpan / 1000.0f / 1000.0f << "ms";
+        os << timeSpan / 1000.0f / 1000.0f << (printUnits ? "ms" : "");
     else if(timeSpan < 60l * 1000ll * 1000ll * 1000ll)
-        os << timeSpan / 1000.0f / 1000.0f / 1000.0f << "s";
+        os << timeSpan / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "s" : "");
     else if(timeSpan < 60l * 60l * 1000ll * 1000ll * 1000ll)
-        os << timeSpan/1000.0f / 1000.0f / 1000.0f / 60.0f << "m";
+        os << timeSpan/1000.0f / 1000.0f / 1000.0f / 60.0f << (printUnits ? "m" : "");
     else
-        os << timeSpan/1000.0f / 1000.0f / 1000.0f / 60.0f / 60.0f<< "h";
+        os << timeSpan/1000.0f / 1000.0f / 1000.0f / 60.0f / 60.0f<< (printUnits ? "h" : "");
 
     return os.str();
 }
@@ -71,25 +71,25 @@ ValueField::ValueField(const string& tag, uint64_t value)
 {
 }
 
-string ValueField::getValue(uint32_t precision) const
+string ValueField::getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const
 {
     ostringstream os;
 
-    uint64_t rounded = applyPrecision(value, precision);
+    uint64_t rounded = (useMetricPrefix ? applyPrecision(value, precision) : value);
 
     // Convert to right unit
-    if(rounded < 1000ll)
+    if(rounded < 1000ll || !useMetricPrefix)
         os << rounded;
     else if(rounded < 1000ll * 1000ll)
-        os << rounded / 1000.0f << "K";
+        os << rounded / 1000.0f << (printUnits ? "K" : "");
     else if(rounded < 1000ll * 1000ll * 1000ll)
-        os << rounded / 1000.0f / 1000.0f << "M";
+        os << rounded / 1000.0f / 1000.0f << (printUnits ? "M" : "");
     else if(rounded < 1000ll * 1000ll * 1000ll * 1000ll)
-        os << rounded / 1000.0f / 1000.0f / 1000.0f << "G";
+        os << rounded / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "G" : "");
     else if(rounded < 1000ll * 1000ll * 1000ll * 1000ll * 1000ll)
-        os << rounded / 1000.0f / 1000.0f / 1000.0f / 1000.0f << "T";
+        os << rounded / 1000.0f / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "T" : "");
     else if(rounded < 1000ll * 1000ll * 1000ll * 1000ll * 1000ll * 1000ll)
-        os << rounded / 1000.0f / 1000.0f / 1000.0f / 1000.0f / 1000.0f << "P";
+        os << rounded / 1000.0f / 1000.0f / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "P" : "");
 
     return os.str();
 }
@@ -105,7 +105,7 @@ RatioField::RatioField(const string& tag, double ratio)
 {
 }
 
-string RatioField::getValue(uint32_t precision) const
+string RatioField::getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const
 {
     ostringstream os;
     os << applyPrecisionDouble(ratio, precision);
@@ -124,36 +124,36 @@ ByteField::ByteField(const string& tag, uint64_t bytes, Encoding encoding)
 {
 }
 
-string ByteField::getValue(uint32_t precision) const
+string ByteField::getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const
 {
     ostringstream os;
 
     if(encoding == Encoding::kIEC) {
-        if(bytes < 1024ll)
+        if(bytes < 1024ll || !useMetricPrefix)
             os << bytes;
         else if(bytes < 1024ll * 1024ll)
-            os << applyPrecisionDouble(bytes / 1024.0f, precision) << "KiB";
+            os << applyPrecisionDouble(bytes / 1024.0f, precision) << (printUnits ? "KiB" : "");
         else if(bytes < 1024ll * 1024ll * 1024ll)
-            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f, precision) << "MiB";
+            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f, precision) << (printUnits ? "MiB" : "");
         else if(bytes < 1024ll * 1024ll * 1024ll * 1024ll)
-            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f, precision) << "GiB";
+            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f, precision) << (printUnits ? "GiB" : "");
         else if(bytes < 1024ll * 1024ll * 1024ll * 1024ll * 1024ll)
-            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f, precision) << "TiB";
+            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f, precision) << (printUnits ? "TiB" : "");
         else if(bytes < 1024ll * 1024ll * 1024ll * 1024ll * 1024ll * 1024ll)
-            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f / 1024.0f, precision) << "PiB";
+            os << applyPrecisionDouble(bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f / 1024.0f, precision) << (printUnits ? "PiB" : "");
     } else {
-        if(bytes < 1000ll)
+        if(bytes < 1000ll || !useMetricPrefix)
             os << applyPrecision(bytes, precision);
         else if(bytes < 1000ll * 1000ll)
-            os << applyPrecision(bytes, precision) / 1000.0f << "KB";
+            os << applyPrecision(bytes, precision) / 1000.0f << (printUnits ? "KB" : "");
         else if(bytes < 1000ll * 1000ll * 1000ll)
-            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f << "MB";
+            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f << (printUnits ? "MB" : "");
         else if(bytes < 1000ll * 1000ll * 1000ll * 1000ll)
-            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f << "GB";
+            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "GB" : "");
         else if(bytes < 1000ll * 1000ll * 1000ll * 1000ll * 1000ll)
-            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f / 1000.0f << "TB";
+            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "TB" : "");
         else if(bytes < 1000ll * 1000ll * 1000ll * 1000ll * 1000ll * 1000ll)
-            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f / 1000.0f / 1000.0f << "PB";
+            os << applyPrecision(bytes, precision) / 1000.0f / 1000.0f / 1000.0f / 1000.0f / 1000.0f << (printUnits ? "PB" : "");
     }
 
     return os.str();

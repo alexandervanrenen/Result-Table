@@ -10,7 +10,7 @@ public:
     virtual ~ResultField();
 
     std::string getTag() const;
-    virtual std::string getValue(uint32_t precision) const = 0;
+    virtual std::string getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const = 0;
 
     virtual std::unique_ptr<ResultField> toUnique() const = 0;
 
@@ -24,7 +24,7 @@ public:
     template<class TimeType>
     TimeField(const std::string& tag, TimeType time) : ResultField(tag), nanoseconds(std::chrono::duration_cast<std::chrono::nanoseconds>(time)) {}
 
-    virtual std::string getValue(uint32_t precision) const;
+    virtual std::string getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const;
     virtual std::unique_ptr<ResultField> toUnique() const;
 
 private:
@@ -33,20 +33,20 @@ private:
 
 class ValueField : public ResultField {
 public:
-    ValueField(const std::string& tag, uint64_t value);
+   ValueField(const std::string& tag, uint64_t value);
 
-    virtual std::string getValue(uint32_t precision) const;
-    virtual std::unique_ptr<ResultField> toUnique() const;
+   virtual std::string getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const;
+   virtual std::unique_ptr<ResultField> toUnique() const;
 
 private:
-    uint64_t value;
+   uint64_t value;
 };
 
 class RatioField : public ResultField {
 public:
     RatioField(const std::string& tag, double ratio);
 
-    virtual std::string getValue(uint32_t precision) const;
+    virtual std::string getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const;
     virtual std::unique_ptr<ResultField> toUnique() const;
 
 private:
@@ -59,7 +59,7 @@ public:
 
     ByteField(const std::string& tag, uint64_t bytes, Encoding encoding = kIEC);
 
-    virtual std::string getValue(uint32_t precision) const;
+    virtual std::string getValue(uint32_t precision, bool useMetricPrefix, bool printUnits) const;
     virtual std::unique_ptr<ResultField> toUnique() const;
 
 private:
