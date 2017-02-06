@@ -1,6 +1,6 @@
-#include "include/ResultSet.hpp"
-#include "include/ResultField.hpp"
-#include "include/ResultLine.hpp"
+#include "include/result_table/ResultSet.hpp"
+#include "include/result_table/ResultField.hpp"
+#include "include/result_table/ResultLine.hpp"
 #include <string>
 #include <iostream>
 
