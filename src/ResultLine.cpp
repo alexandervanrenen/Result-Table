@@ -5,7 +5,7 @@ using namespace std;
 
 ResultLine::ResultLine(const string& tag)
         : tag(tag)
-        , label(label)
+        , label(tag)
 {
 }
 
