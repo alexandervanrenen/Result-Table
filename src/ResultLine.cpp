@@ -3,14 +3,22 @@
 
 using namespace std;
 
-ResultLine::ResultLine(const string& lineLable)
-: lineLable(lineLable)
+ResultLine::ResultLine(const string& tag)
+        : tag(tag)
+        , label(label)
+{
+}
+
+ResultLine::ResultLine(const string& tag, const string& label)
+        : tag(tag)
+        , label(label)
 {
 }
 
 ResultLine::ResultLine(const ResultLine& other)
 {
-   lineLable = other.lineLable;
+   tag = other.tag;
+   label = other.label;
    resultFields.reserve(other.resultFields.size());
    for(unsigned i=0; i<other.resultFields.size(); i++)
       resultFields.push_back(other.resultFields[i]->toUnique());
@@ -34,12 +42,27 @@ ResultLine& operator << (ResultLine& resultLine, const ResultField& resultField)
    return resultLine;
 }
 
-const string ResultLine::getTag() const
-{
-   return lineLable;
-}
-
 const vector<unique_ptr<ResultField>>& ResultLine::getFields() const
 {
    return resultFields;
+}
+
+const string& ResultLine::getTag() const
+{
+   return tag;
+}
+
+const string& ResultLine::getLabel() const
+{
+   return label;
+}
+
+void ResultLine::setLabel(const string& label)
+{
+   this->label = label;
+}
+
+const string& ResultLine::getTextForVisualization() const
+{
+   return label;
 }

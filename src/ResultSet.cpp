@@ -112,7 +112,7 @@ void ResultSet::serialize(ostream& os) const
 
     // Find all columns and calculate their minimum length
     for(uint i=0; i<resultLines.size(); i++) {
-        lableColumn.width = max(lableColumn.width, static_cast<uint64_t>(resultLines[i]->getTag().size()));
+        lableColumn.width = max(lableColumn.width, static_cast<uint64_t>(resultLines[i]->getTextForVisualization().size()));
         for(auto field=resultLines[i]->getFields().begin(); field!=resultLines[i]->getFields().end(); field++) {
             // Find colum with same tag
             auto column = tableLayout.begin();
@@ -140,7 +140,7 @@ void ResultSet::serialize(ostream& os) const
     for(auto line=resultLines.begin(); line!=resultLines.end(); line++) {
         // Print label of this line
         if(kPrintBorder) os << string(totalWidth, '-') << endl;
-        os << left << (kPrintBorder?"| ":"") << setw(lableColumn.width+kPadding) << (*line)->getTag() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
+        os << left << (kPrintBorder?"| ":"") << setw(lableColumn.width+kPadding) << (*line)->getTextForVisualization() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
 
         // Print results of this line
         for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++) {
