@@ -8,13 +8,14 @@
 
 using namespace std;
 
-ResultSet::ResultSet(uint32_t padding, uint32_t precision, bool printUnits, bool useMetricPrefix, bool printBorder, Orientation orientation)
+ResultSet::ResultSet(const string& label, uint32_t padding, uint32_t precision, bool printUnits, bool useMetricPrefix, bool printBorder, Orientation orientation)
 : kPadding(padding)
 , kPrecision(precision)
 , kPrintUnits(printUnits)
 , kUseMetricPrefix(useMetricPrefix)
 , kPrintBorder(printBorder)
 , kOrientation(orientation)
+, kLabel(label)
 {
 }
 
@@ -58,6 +59,22 @@ ResultSet& ResultSet::orientation(Orientation orientation)
     return *this;
 }
 
+ResultSet& ResultSet::label(const std::string& label)
+{
+    kLabel = label;
+    return *this;
+}
+
+void ResultSet::setLabel(const std::string& label)
+{
+    kLabel = label;
+}
+
+const std::string& ResultSet::getLabel() const
+{
+    return kLabel;
+}
+
 void ResultSet::addResultLine(const ResultLine& resultLine)
 {
     resultLines.push_back(unique_ptr<ResultLine>(new ResultLine(resultLine)));
@@ -95,7 +112,7 @@ ostream& operator << (ostream& os, const ResultSet& resultSet)
 }
 
 struct Column {
-     string tag;
+     string label;
      uint64_t width;
 };
 
@@ -107,16 +124,16 @@ void ResultSet::serialize(ostream& os) const
         throw;
     }
 
-    Column lableColumn{"", string("lable").length()};
+    Column labelColumn{kLabel, kLabel.length()};
     vector<Column> tableLayout;
 
     // Find all columns and calculate their minimum length
     for(uint i=0; i<resultLines.size(); i++) {
-        lableColumn.width = max(lableColumn.width, static_cast<uint64_t>(resultLines[i]->getTextForVisualization().size()));
+        labelColumn.width = max(labelColumn.width, static_cast<uint64_t>(resultLines[i]->getTextForVisualization().size()));
         for(auto field=resultLines[i]->getFields().begin(); field!=resultLines[i]->getFields().end(); field++) {
             // Find colum with same tag
             auto column = tableLayout.begin();
-            while(column!=tableLayout.end() && column->tag!=(*field)->getTag()) column++;
+            while(column!=tableLayout.end() && column->label!=(*field)->getTag()) column++;
             if(column == tableLayout.end())
                 tableLayout.push_back(Column{(*field)->getTag(), max((*field)->getTag().size(), (*field)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits).size())}); else
                 column->width = max(column->width , static_cast<uint64_t>((*field)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits).size()));
@@ -125,27 +142,27 @@ void ResultSet::serialize(ostream& os) const
 
     // Get total width
     uint32_t totalWidth = 0 + (kPrintBorder?4:0) + kPadding;
-    totalWidth += lableColumn.width;
+    totalWidth += labelColumn.width;
     for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++)
         totalWidth += column->width + kPadding + (kPrintBorder?3:0);
 
     // Print the header
     if(kPrintBorder) os << string(totalWidth, '-') << endl;
-    os << (kPrintBorder?"| ":"") << left << setw(lableColumn.width+kPadding) << "label" << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
+    os << (kPrintBorder?"| ":"") << left << setw(labelColumn.width+kPadding) << labelColumn.label << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
     for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++)
-        os << setw(column->width+kPadding) << column->tag << (kPrintBorder?" | ":"");
+        os << setw(column->width+kPadding) << column->label << (kPrintBorder?" | ":"");
     os << endl;
 
     // Print each line of the content
     for(auto line=resultLines.begin(); line!=resultLines.end(); line++) {
         // Print label of this line
         if(kPrintBorder) os << string(totalWidth, '-') << endl;
-        os << left << (kPrintBorder?"| ":"") << setw(lableColumn.width+kPadding) << (*line)->getTextForVisualization() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
+        os << left << (kPrintBorder?"| ":"") << setw(labelColumn.width+kPadding) << (*line)->getTextForVisualization() << (kPrintBorder?" | ":"") << (kOrientation==kLeft?left:right);
 
         // Print results of this line
         for(auto column=tableLayout.begin(); column!=tableLayout.end(); column++) {
             auto result = (*line)->getFields().begin();
-            while(result!=(*line)->getFields().end() && (*result)->getTag()!=column->tag) result++;
+            while(result!=(*line)->getFields().end() && (*result)->getTag()!=column->label) result++;
             if(result == (*line)->getFields().end())
                 os << setw(column->width+kPadding) << " " << (kPrintBorder?" | ":""); else
                 os << setw(column->width+kPadding) << (*result)->getValue(kPrecision, kUseMetricPrefix, kPrintUnits) << (kPrintBorder?" | ":"");
